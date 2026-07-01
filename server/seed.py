@@ -1,103 +1,101 @@
-import bcrypt
-from faker import Faker
+from werkzeug.security import generate_password_hash
+
 from app import app
-from models import db, User, BNBListing, Booking
-import random
-from datetime import datetime, timedelta
 
-fake = Faker()
-
+from models import ( db,  User, Listing, Booking, Review, Message,  PropertyImage, Amenity)
 with app.app_context():
 
-    # --------------------
-    # Clear old data
-    # --------------------
-    db.session.query(Booking).delete()
-    db.session.query(BNBListing).delete()
-    db.session.query(User).delete()
+    print("Deleting old data...")
+
+    Review.query.delete()
+    Message.query.delete()
+    Booking.query.delete()
+    Amenity.query.delete()
+    PropertyImage.query.delete()
+    Listing.query.delete()
+    User.query.delete()
 
     db.session.commit()
 
-    print("Database cleared")
+    print("Creating users...")
 
-    # --------------------
-    # Create Users (mix of hosts & clients)
-    # --------------------
-    users = []
+    host = User(
+        username="John Host",
+        email="host@safescape.com",
+        phone="0712345678",
+        password_hash=generate_password_hash("123456"),
+        role="host"
+    )
 
-    for i in range(10):
-        role = "host" if i < 4 else "client"
+    guest = User(
+        username="Mary Guest",
+        email="guest@safescape.com",
+        phone="0798765432",
+        password_hash=generate_password_hash("123456"),
+        role="guest"
+    )
 
-        user = User(
-            username=fake.user_name(),
-            email=fake.unique.email(),
-            phone=fake.unique.phone_number(),
-            role=role,
-            password_hash=bcrypt.hashpw(
-                "password123".encode("utf-8"),
-                bcrypt.gensalt()
-            ).decode("utf-8")
-        )
-
-        users.append(user)
-
-    db.session.add_all(users)
+    db.session.add_all([host, guest])
     db.session.commit()
 
-    print("Users seeded")
+    print("Creating listings...")
 
-    # --------------------
-    # Create Listings (only hosts)
-    # --------------------
-    hosts = [u for u in users if u.role == "host"]
+    listing1 = Listing(
+        title="Luxury Apartment",
+        description="Modern apartment in Nairobi CBD.",
+        country="Kenya",
+        county="Nairobi",
+        town="Nairobi",
+        address="Kimathi Street",
+        price_per_night=4500,
+        bedrooms=2,
+        bathrooms=1,
+        max_guests=4,
+        host_id=host.id
+    )
 
-    listings = []
+    listing2 = Listing(
+        title="Beach House",
+        description="Relax by the ocean in Diani.",
+        country="Kenya",
+        county="Kwale",
+        town="Diani",
+        address="Beach Road",
+        price_per_night=8500,
+        bedrooms=3,
+        bathrooms=2,
+        max_guests=6,
+        host_id=host.id
+    )
 
-    for host in hosts:
-        for _ in range(2):
-            listing = BNBListing(
-                title=fake.sentence(nb_words=4),
-                description=fake.text(max_nb_chars=120),
-                location=fake.city(),
-                price_per_night=round(random.uniform(20, 200), 2),
-                host_id=host.id
-            )
-            listings.append(listing)
-
-    db.session.add_all(listings)
+    db.session.add_all([listing1, listing2])
     db.session.commit()
 
-    print("Listings seeded")
+    print("Adding images...")
 
-    # --------------------
-    # Create Bookings (clients booking listings)
-    # --------------------
-    clients = [u for u in users if u.role == "client"]
+    img1 = PropertyImage(
+        image_url="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
+        listing_id=listing1.id
+    )
 
-    bookings = []
+    img2 = PropertyImage(
+        image_url="https://images.unsplash.com/photo-1494526585095-c41746248156",
+        listing_id=listing2.id
+    )
 
-    for client in clients:
-        for _ in range(2):
-            listing = random.choice(listings)
+    db.session.add_all([img1, img2])
 
-            check_in = datetime.now().date() + timedelta(days=random.randint(1, 10))
-            check_out = check_in + timedelta(days=random.randint(1, 5))
+    print("Adding amenities...")
 
-            nights = (check_out - check_in).days
-            total_price = nights * listing.price_per_night
+    amenities = [
+        Amenity(name="WiFi", listing_id=listing1.id),
+        Amenity(name="Parking", listing_id=listing1.id),
+        Amenity(name="Swimming Pool", listing_id=listing2.id),
+        Amenity(name="Ocean View", listing_id=listing2.id),
+    ]
 
-            booking = Booking(
-                check_in=check_in,
-                check_out=check_out,
-                total_price=total_price,
-                status=random.choice(["pending", "confirmed", "cancelled"]),
-                client_id=client.id,
-                listing_id=listing.id
-            )
+    db.session.add_all(amenities)
 
-            bookings.append(booking)
-
-    db.session.add_all(bookings)
     db.session.commit()
 
-    print("Bookings seeded")
+    print("Database seeded successfully!") 

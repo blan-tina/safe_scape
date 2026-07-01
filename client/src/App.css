@@ -1,38 +1,114 @@
-.App {
-  text-align: center;
+/* General */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body{
+    background:#F5F5F5;
+    color:#3F3F46;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Navbar */
+
+.navbar{
+    background:#3F3F46;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 60px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.logo{
+    font-size:28px;
+    font-weight:bold;
 }
 
-.App-link {
-  color: #61dafb;
+.nav-links{
+    display:flex;
+    gap:30px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.nav-links a{
+    text-decoration:none;
+    color:white;
+    font-weight:600;
+    transition:.3s;
+}
+
+.nav-links a:hover{
+    color:#A8D5BA;
+}
+
+/* Page container */
+
+.page{
+    width:90%;
+    max-width:1200px;
+    margin:40px auto;
+}
+/* Hero */
+.hero{
+    height:70vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+
+    background:
+        linear-gradient(
+            rgba(0,0,0,.45),
+            rgba(0,0,0,.45)
+        ),
+        url("https://imgs.search.brave.com/D0WlBoDTI495ghxXoebrAkt8Ss7oIVjj-1i2L1JlutY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuYWRzdHRjLmNv/bS9tZWRpYS9pbWFn/ZXMvNjIzNC8wM2Iw/LzNlNGIvMzEwYy80/NTAwLzAwOWQvbWVk/aXVtX2pwZy8xNF9D/YXNhX1RlamlkYV8t/XyVDMiVBOV9GZWRl/cmljb19DYWlyb2xp/Xyhsb3cpLmpwZz8x/NjQ3NTc1OTc3");
+
+    background-size:cover;
+    background-position:center;
+
+    color:white;
+}
+
+.hero h1{
+    font-size:64px;
+    margin-bottom:20px;
+}
+
+.hero p{
+    font-size:22px;
+    max-width:700px;
+}
+
+/* Featured Properties */
+
+
+.properties{
+    max-width:1300px;
+    margin:auto;
+    padding:70px 30px;
+}
+
+.properties h2{
+    font-size:38px;
+    margin-bottom:40px;
+}
+
+.property-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+    gap:35px;
+}
+
+
+
+.cards{
+    background:white;
+    border-radius:12px;
+    padding:40px;
+    text-align:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.08);
 }

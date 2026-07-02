@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 from models import ( db,User, Listing, Booking, Review, Message, PropertyImage, Amenity )
-
+from flask_jwt_extended import ( JWTManager, create_access_token, jwt_required, get_jwt_identity)
 app = Flask(__name__)
 
 # ==========================================================
@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://user_bnb:123Host!@localhost/bnb_db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = "dev_secret_key"
+jwt = JWTManager(app)
 
 db.init_app(app)
 CORS(app)
@@ -106,10 +107,18 @@ def login():
             "error": "Invalid email or password."
         }), 401
 
+    access_token = create_access_token(
+        identity={
+            "id": user.id,
+            "role": user.role
+        }
+    )
+
     return jsonify({
         "message": "Login successful.",
+        "access_token": access_token,
         "user": user.to_dict()
-    })
+    }), 200
 
 # ==========================================================
 # USERS

@@ -43,7 +43,7 @@
     position:absolute;
     top:15px;
     left:15px;
-    background:#16a34a;
+    background:#137135;
     color:white;
     padding:6px 12px;
     border-radius:20px;
@@ -102,18 +102,17 @@
 .night{
     color:#666;
 }
-
 .view-btn{
-    background:#ff385c;
+    display:inline-block;
+    background:#e44e69;
     color:white;
-    border:none;
-    padding:12px 22px;
+    padding:12px 25px;
     border-radius:10px;
-    cursor:pointer;
-    font-size:15px;
+    text-decoration:none;
     transition:.3s;
+    font-weight:bold;
 }
 
 .view-btn:hover{
-    background:#e11d48;
+    background:#7f5b67;
 }

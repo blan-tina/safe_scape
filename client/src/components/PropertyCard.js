@@ -1,4 +1,5 @@
 import "./PropertyCard.css";
+import { Link } from "react-router-dom";
 
 function PropertyCard({ property }) {
   return (
@@ -28,7 +29,7 @@ function PropertyCard({ property }) {
           <h3>{property.title}</h3>
 
           <span className="rating">
-            ⭐ 4.9
+            ⭐ 4.7
           </span>
         </div>
 
@@ -58,9 +59,9 @@ function PropertyCard({ property }) {
 
           </div>
 
-          <button className="view-btn">
-            View
-          </button>
+          <Link to={`/listing/${property.id}`} className="view-btn">
+            View Details
+          </Link>
 
         </div>
 

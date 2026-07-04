@@ -9,6 +9,7 @@ import HostDashboard from "./pages/HostDashboard";
 import GuestDashboard from "./pages/GuestDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AddProperty from "./pages/AddProperty";
 import "./App.css";
 
 function App() {
@@ -21,34 +22,33 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
-            path="/guest-dashboard"
-            element={
+          path="/guest-dashboard"
+          element={
             <ProtectedRoute role="guest">
               <GuestDashboard />
             </ProtectedRoute>
-      }
-/>
-
+          }
+        />
         <Route
-        path="/host-dashboard"
-  element={
-     <ProtectedRoute role="host">
-      <HostDashboard />
-    </ProtectedRoute>
-       }
-/>
+          path="/host-dashboard"
+          element={
+            <ProtectedRoute role="host">
+              <HostDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/listing/:id" element={<PropertyDetails />} />
+        <Route
+          path="/host/add-property"
+          element={
+            <ProtectedRoute role="host">
+              <AddProperty />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
 }
 
-         <Route
-        path="/guest-dashboard"
-  element={
-    <ProtectedRoute>
-      <GuestDashboard />
-    </ProtectedRoute>
-        }
-/>
 export default App;

@@ -1,0 +1,110 @@
+.add-property-page {
+    min-height: 100vh;
+    background: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+}
+
+.add-property-card {
+    width: 100%;
+    max-width: 850px;
+    background: white;
+    padding: 45px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.add-property-card h1 {
+    text-align: center;
+    color: #2E7D32;
+    margin-bottom: 35px;
+    font-size: 2.2rem;
+}
+
+/* ==========================
+   FORM
+========================== */
+
+.add-property-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.add-property-card input,
+.add-property-card textarea,
+.add-property-card select {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+    background: white;
+}
+
+.add-property-card textarea {
+    resize: vertical;
+}
+
+.add-property-card input:focus,
+.add-property-card textarea:focus,
+.add-property-card select:focus {
+    border-color: #2E7D32;
+    box-shadow: 0 0 8px rgba(46,125,50,.2);
+}
+
+/* ==========================
+   ROW OF INPUTS
+========================== */
+
+.three-inputs {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 15px;
+}
+
+/* ==========================
+   BUTTON
+========================== */
+
+.add-property-card button {
+    margin-top: 10px;
+    padding: 16px;
+    border: none;
+    border-radius: 10px;
+    background: #2E7D32;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.add-property-card button:hover {
+    background: #1B5E20;
+    transform: translateY(-2px);
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media (max-width:768px){
+
+    .add-property-card{
+        padding:30px 20px;
+    }
+
+    .three-inputs{
+        grid-template-columns:1fr;
+    }
+
+    .add-property-card h1{
+        font-size:1.8rem;
+    }
+
+}

@@ -17,16 +17,28 @@ app.config['JWT_SECRET_KEY'] = "dev_secret_key"
 jwt = JWTManager(app)
 
 db.init_app(app)
-CORS(app)
 
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": "http://localhost:3000"
+        }
+    },
+    supports_credentials=True
+)
 # ==========================================================
 # HOME
 # ==========================================================
-
 @app.route("/")
 def home():
+
     return jsonify({
-        "message": "Welcome to the SafeScape API"
+
+        "message": "Welcome to the SafeScape API",
+
+        "status": "Running"
+
     })
 
 # ==========================================================
@@ -38,7 +50,7 @@ def register():
 
     data = request.get_json()
 
-    required = [
+    required_fields = [
         "username",
         "email",
         "phone",
@@ -46,36 +58,37 @@ def register():
         "role"
     ]
 
-    for field in required:
-        if field not in data:
+    for field in required_fields:
+        if not data.get(field):
             return jsonify({
                 "error": f"{field} is required."
             }), 400
 
-    if User.query.filter_by(email=data["email"]).first():
-        return jsonify({
-            "error": "Email already exists."
-        }), 400
+    existing_user = User.query.filter(
+        (User.email == data["email"]) |
+        (User.phone == data["phone"])
+    ).first()
 
-    if User.query.filter_by(phone=data["phone"]).first():
+    if existing_user:
         return jsonify({
-            "error": "Phone number already exists."
-        }), 400
+            "error": "Email or phone already exists."
+        }), 409
 
-    new_user = User(
+    user = User(
         username=data["username"],
         email=data["email"],
         phone=data["phone"],
-        password_hash=generate_password_hash(data["password"]),
+        password_hash=generate_password_hash(
+            data["password"]
+        ),
         role=data["role"]
     )
 
-    db.session.add(new_user)
+    db.session.add(user)
     db.session.commit()
 
     return jsonify({
-        "message": "Account created successfully.",
-        "user": new_user.to_dict()
+        "message": "Account created successfully."
     }), 201
 
 # ==========================================================
@@ -91,34 +104,58 @@ def login():
     password = data.get("password")
 
     if not email or not password:
+
         return jsonify({
             "error": "Email and password are required."
         }), 400
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(
+        email=email
+    ).first()
 
-    if user is None:
-        return jsonify({
-            "error": "Invalid email or password."
-        }), 401
+    if (
+        not user or
+        not check_password_hash(
+            user.password_hash,
+            password
+        )
+    ):
 
-    if not check_password_hash(user.password_hash, password):
         return jsonify({
             "error": "Invalid email or password."
         }), 401
 
     access_token = create_access_token(
+
         identity={
+
             "id": user.id,
+
             "role": user.role
+
         }
+
     )
 
     return jsonify({
-        "message": "Login successful.",
+
         "access_token": access_token,
-        "user": user.to_dict()
-    }), 200
+
+        "user": {
+
+            "id": user.id,
+
+            "username": user.username,
+
+            "email": user.email,
+
+            "phone": user.phone,
+
+            "role": user.role
+
+        }
+
+    })
 
 # ==========================================================
 # USERS
@@ -222,7 +259,49 @@ def get_listing(id):
 
     })
 
+#=======================================================
+# GET LISTINGS FOR A HOST
+#=======================================================
+@app.route("/my-listings", methods=["GET"])
+@jwt_required()
+def my_listings():
 
+    current_user = get_jwt_identity()
+
+    host = User.query.get(current_user["id"])
+
+    if not host:
+        return jsonify({
+            "error": "User not found."
+        }), 404
+
+    listings = []
+
+    for listing in host.listings:
+
+        listings.append({
+
+            "id": listing.id,
+
+            "title": listing.title,
+
+            "county": listing.county,
+
+            "town": listing.town,
+
+            "price_per_night": listing.price_per_night,
+
+            "bookings": len(listing.bookings),
+
+            "image": (
+                listing.images[0].image_url
+                if listing.images
+                else "https://placehold.co/600x400?text=No+Image"
+            )
+
+        })
+
+    return jsonify(listings)
 # ==========================================================
 # CREATE LISTING
 # ==========================================================
@@ -242,7 +321,7 @@ def create_listing():
         "bedrooms",
         "bathrooms",
         "max_guests",
-        "host_id"
+        
     ]
 
     for field in required:
@@ -255,7 +334,7 @@ def create_listing():
 
     if not host:
         return jsonify({
-            "error": "Host not found."
+            "error": "User not found."
         }), 404
 
     if host.role != "host":
@@ -275,7 +354,7 @@ def create_listing():
         bathrooms=data["bathrooms"],
         max_guests=data["max_guests"],
         available=True,
-        host_id=data["host_id"]
+        host_id=host.id
     )
 
     db.session.add(listing)
@@ -532,6 +611,57 @@ def create_booking():
         "booking": booking.to_dict()
     }), 201
 
+# ==========================================================
+# GET MY BOOKINGS
+# ==========================================================
+
+@app.route("/my-bookings", methods=["GET"])
+@jwt_required()
+def my_bookings():
+
+    current_user = get_jwt_identity()
+
+    bookings = Booking.query.filter_by(
+        guest_id=current_user["id"]
+    ).all()
+
+    results = []
+
+    for booking in bookings:
+
+        listing = booking.listing
+
+        results.append({
+
+            "id": booking.id,
+
+            "check_in": booking.check_in.isoformat(),
+
+            "check_out": booking.check_out.isoformat(),
+
+            "guests": booking.guests,
+
+            "status": booking.status,
+
+            "total_price": booking.total_price,
+
+            "title": listing.title,
+
+            "town": listing.town,
+
+            "county": listing.county,
+
+            "price_per_night": listing.price_per_night,
+
+            "image": (
+                listing.images[0].image_url
+                if listing.images
+                else "https://placehold.co/600x400"
+            )
+
+        })
+
+    return jsonify(results)
 # ==========================================================
 # GET BOOKINGS FOR A GUEST
 # ==========================================================

@@ -27,6 +27,7 @@ CORS(
     },
     supports_credentials=True
 )
+
 # ==========================================================
 # HOME
 # ==========================================================
@@ -307,6 +308,7 @@ def my_listings():
 # ==========================================================
 
 @app.route("/listings", methods=["POST"])
+@jwt_required()
 def create_listing():
 
     data = request.get_json()
@@ -330,7 +332,9 @@ def create_listing():
                 "error": f"{field} is required."
             }), 400
 
-    host = User.query.get(data["host_id"])
+    current_user = get_jwt_identity()
+
+    host = User.query.get(current_user["id"])
 
     if not host:
         return jsonify({
@@ -371,9 +375,17 @@ def create_listing():
 # ==========================================================
 
 @app.route("/listings/<int:listing_id>", methods=["PUT"])
+@jwt_required()
 def update_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
+
+    current_user = get_jwt_identity()
+
+    if listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only edit your own properties."
+        }), 403
 
     data = request.get_json()
 
@@ -402,9 +414,17 @@ def update_listing(listing_id):
 # ==========================================================
 
 @app.route("/listings/<int:listing_id>", methods=["DELETE"])
+@jwt_required()
 def delete_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
+
+    current_user = get_jwt_identity()
+
+    if listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only delete your own properties."
+        }), 403
 
     db.session.delete(listing)
     db.session.commit()
@@ -419,9 +439,17 @@ def delete_listing(listing_id):
 # ==========================================================
 
 @app.route("/listings/<int:listing_id>/images", methods=["POST"])
+@jwt_required()
 def add_image(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
+
+    current_user = get_jwt_identity()
+
+    if listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only add images to your own properties."
+        }), 403
 
     data = request.get_json()
 
@@ -449,9 +477,17 @@ def add_image(listing_id):
 # ==========================================================
 
 @app.route("/images/<int:image_id>", methods=["DELETE"])
+@jwt_required()
 def delete_image(image_id):
 
     image = PropertyImage.query.get_or_404(image_id)
+
+    current_user = get_jwt_identity()
+
+    if image.listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only delete images from your own properties."
+        }), 403
 
     db.session.delete(image)
     db.session.commit()
@@ -466,9 +502,17 @@ def delete_image(image_id):
 # ==========================================================
 
 @app.route("/listings/<int:listing_id>/amenities", methods=["POST"])
+@jwt_required()
 def add_amenity(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
+
+    current_user = get_jwt_identity()
+
+    if listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only add amenities to your own properties."
+        }), 403
 
     data = request.get_json()
 
@@ -496,9 +540,17 @@ def add_amenity(listing_id):
 # ==========================================================
 
 @app.route("/amenities/<int:amenity_id>", methods=["DELETE"])
+@jwt_required()
 def delete_amenity(amenity_id):
 
     amenity = Amenity.query.get_or_404(amenity_id)
+
+    current_user = get_jwt_identity()
+
+    if amenity.listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "You can only delete amenities from your own properties."
+        }), 403
 
     db.session.delete(amenity)
     db.session.commit()
@@ -517,8 +569,10 @@ def create_booking():
 
     data = request.get_json()
 
+    current_user = get_jwt_identity()
+    guest_id = current_user["id"]
+
     listing_id = data.get("listing_id")
-    guest_id = data.get("guest_id")
     check_in = data.get("check_in")
     check_out = data.get("check_out")
     guests = data.get("guests", 1)
@@ -526,7 +580,7 @@ def create_booking():
     # -----------------------
     # Validate required fields
     # -----------------------
-    if not listing_id or not guest_id or not check_in or not check_out:
+    if not listing_id or not check_in or not check_out:
         return jsonify({
             "error": "All booking fields are required."
         }), 400
@@ -557,6 +611,16 @@ def create_booking():
         return jsonify({
             "error": "Check-out must be after check-in."
         }), 400
+
+    # -----------------------
+    # Only guests can book
+    # -----------------------
+    guest = User.query.get(guest_id)
+
+    if not guest or guest.role != "guest":
+        return jsonify({
+            "error": "Only guests can book properties."
+        }), 403
 
     # -----------------------
     # Find property
@@ -701,9 +765,17 @@ def host_bookings(host_id):
 # ==========================================================
 
 @app.route("/bookings/<int:booking_id>", methods=["PUT"])
+@jwt_required()
 def update_booking(booking_id):
 
     booking = Booking.query.get_or_404(booking_id)
+
+    current_user = get_jwt_identity()
+
+    if booking.listing.host_id != current_user["id"]:
+        return jsonify({
+            "error": "Only the property host can update this booking."
+        }), 403
 
     data = request.get_json()
 
@@ -725,9 +797,17 @@ def update_booking(booking_id):
 # ==========================================================
 
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
+@jwt_required()
 def delete_booking(booking_id):
 
     booking = Booking.query.get_or_404(booking_id)
+
+    current_user = get_jwt_identity()
+
+    if current_user["id"] not in (booking.guest_id, booking.listing.host_id):
+        return jsonify({
+            "error": "Unauthorized"
+        }), 403
 
     db.session.delete(booking)
     db.session.commit()
@@ -765,14 +845,34 @@ def cancel_booking(id):
 # ==========================================================
 
 @app.route("/reviews", methods=["POST"])
+@jwt_required()
 def create_review():
 
     data = request.get_json()
 
+    if not data.get("rating") or not data.get("listing_id"):
+        return jsonify({
+            "error": "rating and listing_id are required."
+        }), 400
+
+    if not (1 <= int(data["rating"]) <= 5):
+        return jsonify({
+            "error": "rating must be between 1 and 5."
+        }), 400
+
+    listing = Listing.query.get(data["listing_id"])
+
+    if not listing:
+        return jsonify({
+            "error": "Property not found."
+        }), 404
+
+    current_user = get_jwt_identity()
+
     review = Review(
         rating=data["rating"],
         comment=data.get("comment", ""),
-        guest_id=data["guest_id"],
+        guest_id=current_user["id"],
         listing_id=data["listing_id"]
     )
 
@@ -807,12 +907,27 @@ def get_reviews(listing_id):
 # ==========================================================
 
 @app.route("/messages", methods=["POST"])
+@jwt_required()
 def send_message():
 
     data = request.get_json()
 
+    if not data.get("receiver_id") or not data.get("message"):
+        return jsonify({
+            "error": "receiver_id and message are required."
+        }), 400
+
+    receiver = User.query.get(data["receiver_id"])
+
+    if not receiver:
+        return jsonify({
+            "error": "Recipient not found."
+        }), 404
+
+    current_user = get_jwt_identity()
+
     message = Message(
-        sender_id=data["sender_id"],
+        sender_id=current_user["id"],
         receiver_id=data["receiver_id"],
         message=data["message"]
     )

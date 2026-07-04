@@ -44,6 +44,21 @@
     border-color:#4caf50;
 }
 
+.login-card select{
+    padding:14px;
+    margin-bottom:18px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    font-size:15px;
+    background:white;
+    color:#333;
+}
+
+.login-card select:focus{
+    outline:none;
+    border-color:#4caf50;
+}
+
 .login-card button{
     padding:15px;
     border:none;

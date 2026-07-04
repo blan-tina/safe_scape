@@ -26,6 +26,9 @@ function AddProperty() {
 
     });
 
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     function handleChange(e) {
 
         setFormData({
@@ -39,23 +42,61 @@ function AddProperty() {
 
         e.preventDefault();
 
+        setError("");
+        setLoading(true);
+
         try {
 
-            await api.post("/listings", formData);
+            // 1. Create the listing itself.
+            // host_id is derived server-side from the logged-in user's token,
+            // so we only need to send the property details here.
+            const response = await api.post("/listings", {
+                title: formData.title,
+                description: formData.description,
+                country: formData.country,
+                county: formData.county,
+                town: formData.town,
+                address: formData.address,
+                price_per_night: Number(formData.price_per_night),
+                bedrooms: Number(formData.bedrooms),
+                bathrooms: Number(formData.bathrooms),
+                max_guests: Number(formData.max_guests),
+            });
+
+            const listingId = response.data.listing.id;
+
+            // 2. Attach the main image, if one was provided.
+            if (formData.image_url.trim()) {
+                await api.post(`/listings/${listingId}/images`, {
+                    image_url: formData.image_url.trim(),
+                });
+            }
+
+            // 3. Attach amenities, if any were provided (comma-separated).
+            const amenityNames = formData.amenities
+                .split(",")
+                .map((name) => name.trim())
+                .filter((name) => name.length > 0);
+
+            for (const name of amenityNames) {
+                await api.post(`/listings/${listingId}/amenities`, { name });
+            }
 
             alert("Property added successfully!");
 
             navigate("/host-dashboard");
 
-        } catch (error) {
+        } catch (err) {
 
-            console.log(error);
+            console.log(err);
 
-            alert(
-                error.response?.data?.error ||
+            setError(
+                err.response?.data?.error ||
                 "Unable to add property."
             );
 
+        } finally {
+            setLoading(false);
         }
 
     }
@@ -67,6 +108,12 @@ function AddProperty() {
             <div className="add-property-card">
 
                 <h1>Add New Property</h1>
+
+                {error && (
+                    <div className="error-message">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
 
@@ -121,32 +168,39 @@ function AddProperty() {
                         placeholder="Price Per Night"
                         value={formData.price_per_night}
                         onChange={handleChange}
+                        min="1"
                         required
                     />
 
-                    
+                    <input
+                        type="number"
+                        name="bedrooms"
+                        placeholder="Bedrooms"
+                        value={formData.bedrooms}
+                        onChange={handleChange}
+                        min="1"
+                        required
+                    />
 
                     <input
-                            type="number"
-                            name="bedrooms"
-                            placeholder="Rooms"
-                            value={formData.bedrooms}
-                            onChange={handleChange}
-                            required
-                        />
-
-            
+                        type="number"
+                        name="bathrooms"
+                        placeholder="Bathrooms"
+                        value={formData.bathrooms}
+                        onChange={handleChange}
+                        min="1"
+                        required
+                    />
 
                     <input
-                            type="number"
-                            name="max_guests"
-                            placeholder="Guests"
-                            value={formData.max_guests}
-                            onChange={handleChange}
-                            required
-                        />
-
-                    
+                        type="number"
+                        name="max_guests"
+                        placeholder="Guests"
+                        value={formData.max_guests}
+                        onChange={handleChange}
+                        min="1"
+                        required
+                    />
 
                     <input
                         type="text"
@@ -164,8 +218,8 @@ function AddProperty() {
                         rows="4"
                     />
 
-                    <button type="submit">
-                        Add Property
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Adding..." : "Add Property"}
                     </button>
 
                 </form>

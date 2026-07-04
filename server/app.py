@@ -163,13 +163,64 @@ def get_listings():
 # ==========================================================
 # GET SINGLE LISTING
 # ==========================================================
+@app.route("/listings/<int:id>", methods=["GET"])
+def get_listing(id):
 
-@app.route("/listings/<int:listing_id>", methods=["GET"])
-def get_listing(listing_id):
+    listing = Listing.query.get(id)
 
-    listing = Listing.query.get_or_404(listing_id)
+    if not listing:
+        return jsonify({
+            "error": "Property not found."
+        }), 404
 
-    return jsonify(listing.to_dict())
+    return jsonify({
+
+        "id": listing.id,
+
+        "title": listing.title,
+
+        "description": listing.description,
+
+        "country": listing.country,
+
+        "county": listing.county,
+
+        "town": listing.town,
+
+        "address": listing.address,
+
+        "price_per_night": listing.price_per_night,
+
+        "bedrooms": listing.bedrooms,
+
+        "bathrooms": listing.bathrooms,
+
+        "max_guests": listing.max_guests,
+
+        "available": listing.available,
+
+        "host": listing.host.username,
+
+        "images": [
+            image.image_url
+            for image in listing.images
+        ],
+
+        "amenities": [
+            amenity.name
+            for amenity in listing.amenities
+        ],
+
+        "reviews": [
+            {
+                "guest": review.guest.username,
+                "rating": review.rating,
+                "comment": review.comment
+            }
+            for review in listing.reviews
+        ]
+
+    })
 
 
 # ==========================================================
@@ -382,62 +433,95 @@ def delete_amenity(amenity_id):
 # ==========================================================
 
 @app.route("/bookings", methods=["POST"])
+@jwt_required()
 def create_booking():
 
     data = request.get_json()
 
-    required = [
-        "guest_id",
-        "listing_id",
-        "check_in",
-        "check_out"
-    ]
+    listing_id = data.get("listing_id")
+    guest_id = data.get("guest_id")
+    check_in = data.get("check_in")
+    check_out = data.get("check_out")
+    guests = data.get("guests", 1)
 
-    for field in required:
-        if field not in data:
-            return jsonify({
-                "error": f"{field} is required."
-            }), 400
+    # -----------------------
+    # Validate required fields
+    # -----------------------
+    if not listing_id or not guest_id or not check_in or not check_out:
+        return jsonify({
+            "error": "All booking fields are required."
+        }), 400
 
-    guest = User.query.get(data["guest_id"])
-    listing = Listing.query.get(data["listing_id"])
+    # -----------------------
+    # Convert dates
+    # -----------------------
+    try:
+        check_in = datetime.strptime(
+            check_in,
+            "%Y-%m-%d"
+        ).date()
 
-    if guest is None:
-        return jsonify({"error": "Guest not found."}), 404
+        check_out = datetime.strptime(
+            check_out,
+            "%Y-%m-%d"
+        ).date()
 
-    if listing is None:
-        return jsonify({"error": "Listing not found."}), 404
+    except ValueError:
+        return jsonify({
+            "error": "Invalid date format."
+        }), 400
 
-    if guest.role != "guest":
-        return jsonify({"error": "Only guests can make bookings."}), 403
-
-    check_in = datetime.strptime(
-        data["check_in"],
-        "%Y-%m-%d"
-    ).date()
-
-    check_out = datetime.strptime(
-        data["check_out"],
-        "%Y-%m-%d"
-    ).date()
-
+    # -----------------------
+    # Check dates
+    # -----------------------
     if check_out <= check_in:
         return jsonify({
             "error": "Check-out must be after check-in."
         }), 400
 
+    # -----------------------
+    # Find property
+    # -----------------------
+    listing = Listing.query.get(listing_id)
+
+    if not listing:
+        return jsonify({
+            "error": "Property not found."
+        }), 404
+
+    # -----------------------
+    # Prevent double booking
+    # -----------------------
+    existing_booking = Booking.query.filter(
+        Booking.listing_id == listing_id,
+        Booking.status != "cancelled",
+        Booking.check_in < check_out,
+        Booking.check_out > check_in
+    ).first()
+
+    if existing_booking:
+        return jsonify({
+            "error": "These dates are already booked."
+        }), 400
+
+    # -----------------------
+    # Calculate price
+    # -----------------------
     nights = (check_out - check_in).days
 
-    total = nights * listing.price_per_night
+    total_price = nights * listing.price_per_night
 
+    # -----------------------
+    # Create booking
+    # -----------------------
     booking = Booking(
-        guest_id=guest.id,
-        listing_id=listing.id,
+        guest_id=guest_id,
+        listing_id=listing_id,
         check_in=check_in,
         check_out=check_out,
-        guests=data.get("guests", 1),
-        special_requests=data.get("special_requests", ""),
-        total_price=total
+        guests=guests,
+        total_price=total_price,
+        status="pending"
     )
 
     db.session.add(booking)
@@ -447,7 +531,6 @@ def create_booking():
         "message": "Booking created successfully.",
         "booking": booking.to_dict()
     }), 201
-
 
 # ==========================================================
 # GET BOOKINGS FOR A GUEST
@@ -523,6 +606,29 @@ def delete_booking(booking_id):
         "message": "Booking cancelled."
     })
 
+#=========================================================
+# CANCEL BOOKING ROUTE
+#=========================================================
+@app.route("/bookings/<int:id>/cancel", methods=["PATCH"])
+@jwt_required()
+def cancel_booking(id):
+
+    identity = get_jwt_identity()
+
+    booking = Booking.query.get_or_404(id)
+
+    if booking.guest_id != identity["id"]:
+        return jsonify({
+            "error": "Unauthorized"
+        }), 403
+
+    booking.status = "cancelled"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Booking cancelled successfully."
+    })
 
 # ==========================================================
 # CREATE REVIEW

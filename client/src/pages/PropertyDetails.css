@@ -1,87 +1,229 @@
 .property-details {
-    max-width: 1300px;
+    max-width: 1200px;
     margin: 40px auto;
-    padding: 20px;
+    padding: 0 20px;
 }
 
 .property-title {
-    font-size: 42px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #222;
     margin-bottom: 10px;
 }
 
 .property-location {
     color: #666;
-    margin-bottom: 25px;
-}
-
-.hero-image {
-    width: 100%;
-    height: 550px;
-    object-fit: cover;
-    border-radius: 20px;
+    font-size: 1rem;
     margin-bottom: 30px;
 }
 
+
+.hero-image {
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    border-radius: 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+
 .property-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
+    align-items: flex-start;
+}
+
+
+.left-column {
+    flex: 1;
+}
+
+.left-column h2 {
+    color: #2e7d32;
+    margin-bottom: 15px;
+    margin-top: 35px;
+    font-size: 1.8rem;
+}
+
+.left-column p {
+    line-height: 1.8;
+    color: #555;
+    font-size: 1rem;
+}
+
+
+
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.features span {
+    background: #f5f5f5;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #444;
+}
+
+
+.amenities {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
 }
 
-.left-column h2{
-    margin-bottom:20px;
+.amenity {
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: 500;
+    color: #555;
 }
 
-.left-column p{
-    line-height:1.8;
-    color:#555;
+
+.booking-card {
+    width: 360px;
+    min-width: 360px;
+
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+
+    box-shadow: 0 15px 35px rgba(0,0,0,.12);
+
+    position: sticky;
+    top: 100px;
 }
 
-.features{
-    display:flex;
-    gap:25px;
-    margin:30px 0;
-    font-size:18px;
+.booking-card h2 {
+    color: #2e7d32;
+    font-size: 2rem;
+    margin-bottom: 5px;
 }
 
-.amenities{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:15px;
-    margin-top:20px;
+.booking-card p {
+    color: #777;
+    margin-bottom: 20px;
 }
 
-.amenity{
-    background:#f7f7f7;
-    padding:15px;
-    border-radius:10px;
+.booking-card hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
 }
 
-.booking-card{
-    background:white;
-    border-radius:18px;
-    padding:25px;
-    box-shadow:0 10px 30px rgba(0,0,0,.1);
-    position:sticky;
-    top:120px;
+
+.booking-card label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 18px;
+    font-weight: 600;
+    color: #444;
 }
 
-.booking-card h2{
-    color:#ff385c;
+.booking-card input,
+.booking-card select {
+    width: 100%;
+    padding: 13px;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    font-size: 16px;
+
+    box-sizing: border-box;
+    outline: none;
+
+    transition: .3s;
 }
 
-.reserve-btn{
-    width:100%;
-    padding:15px;
-    border:none;
-    background:#ff385c;
-    color:white;
-    font-size:18px;
-    border-radius:12px;
-    cursor:pointer;
-    margin-top:20px;
+.booking-card input:focus,
+.booking-card select:focus {
+    border-color: #2e7d32;
 }
 
-.reserve-btn:hover{
-    background:#e31c5f;
+
+.reserve-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #2e7d32;
+    color: white;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+.reserve-btn:hover {
+    background: #1b5e20;
+    transform: translateY(-2px);
+}
+
+
+.host-section {
+    margin-top: 50px;
+    padding-top: 25px;
+    border-top: 1px solid #eee;
+}
+
+.host-section h2 {
+    color: #2e7d32;
+}
+
+
+
+@media (max-width: 1000px) {
+
+    .property-content {
+        flex-direction: column;
+    }
+
+    .booking-card {
+        width: 100%;
+        min-width: 100%;
+        position: static;
+    }
+
+    .hero-image {
+        height: 350px;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .property-title {
+        font-size: 2rem;
+    }
+
+    .hero-image {
+        height: 250px;
+    }
+
+    .features {
+        flex-direction: column;
+    }
+
+    .features span {
+        width: 100%;
+    }
+
+    .amenities {
+        grid-template-columns: 1fr;
+    }
+
 }

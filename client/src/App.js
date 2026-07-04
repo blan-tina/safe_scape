@@ -43,4 +43,12 @@ function App() {
   );
 }
 
+         <Route
+        path="/guest-dashboard"
+  element={
+    <ProtectedRoute>
+      <GuestDashboard />
+    </ProtectedRoute>
+        }
+/>
 export default App;

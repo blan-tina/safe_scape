@@ -5,6 +5,8 @@ from datetime import datetime
 
 from models import ( db,User, Listing, Booking, Review, Message, PropertyImage, Amenity )
 from flask_jwt_extended import ( JWTManager, create_access_token, jwt_required, get_jwt_identity)
+from config import Config
+
 app = Flask(__name__)
 
 # ==========================================================
@@ -27,7 +29,6 @@ CORS(
     },
     supports_credentials=True
 )
-
 # ==========================================================
 # HOME
 # ==========================================================
@@ -190,7 +191,52 @@ def get_user(user_id):
 @app.route("/listings", methods=["GET"])
 def get_listings():
 
-    listings = Listing.query.all()
+    query = Listing.query.filter(Listing.available == True)
+
+    location = request.args.get("location")
+
+    if location:
+        search_term = f"%{location}%"
+        query = query.filter(
+            db.or_(
+                Listing.town.ilike(search_term),
+                Listing.county.ilike(search_term),
+                Listing.country.ilike(search_term),
+                Listing.title.ilike(search_term),
+            )
+        )
+
+    guests = request.args.get("guests")
+
+    if guests:
+        try:
+            query = query.filter(Listing.max_guests >= int(guests))
+        except ValueError:
+            pass
+
+    check_in = request.args.get("check_in")
+    check_out = request.args.get("check_out")
+
+    if check_in and check_out:
+        try:
+            check_in_date = datetime.strptime(check_in, "%Y-%m-%d").date()
+            check_out_date = datetime.strptime(check_out, "%Y-%m-%d").date()
+
+            conflicting_listing_ids = db.session.query(
+                Booking.listing_id
+            ).filter(
+                Booking.status != "cancelled",
+                Booking.check_in < check_out_date,
+                Booking.check_out > check_in_date,
+            )
+
+            query = query.filter(
+                Listing.id.notin_(conflicting_listing_ids)
+            )
+        except ValueError:
+            pass
+
+    listings = query.all()
 
     return jsonify([
         listing.to_dict()
@@ -240,12 +286,12 @@ def get_listing(id):
         "host": listing.host.username,
 
         "images": [
-            image.image_url
+            {"id": image.id, "image_url": image.image_url}
             for image in listing.images
         ],
 
         "amenities": [
-            amenity.name
+            {"id": amenity.id, "name": amenity.name}
             for amenity in listing.amenities
         ],
 

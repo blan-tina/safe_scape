@@ -10,6 +10,7 @@ import GuestDashboard from "./pages/GuestDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AddProperty from "./pages/AddProperty";
+import EditProperty from "./pages/EditProperty";
 import "./App.css";
 
 function App() {
@@ -43,6 +44,14 @@ function App() {
           element={
             <ProtectedRoute role="host">
               <AddProperty />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/edit/:id"
+          element={
+            <ProtectedRoute role="host">
+              <EditProperty />
             </ProtectedRoute>
           }
         />

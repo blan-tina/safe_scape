@@ -8,7 +8,11 @@ function PropertyCard({ property }) {
       <div className="image-container">
 
         <img
-          src={property.images?.[0]}
+          src={
+            property.images && property.images.length > 0
+              ? property.images[0].image_url
+              : "https://placehold.co/400x250?text=No+Image"
+          }
           alt={property.title}
           className="property-image"
         />
@@ -42,7 +46,7 @@ function PropertyCard({ property }) {
         </p>
 
         <p className="amenities">
-          {property.amenities?.join(" • ")}
+          {property.amenities?.map((a) => a.name).join(" • ")}
         </p>
 
         <div className="bottom-row">

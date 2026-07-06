@@ -7,10 +7,28 @@ import SearchBar from "../components/SearchBar";
 function Home() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState(null);
 
   useEffect(() => {
+    const params = {};
+
+    if (filters?.location) {
+      params.location = filters.location;
+    }
+
+    if (filters?.checkIn && filters?.checkOut) {
+      params.check_in = filters.checkIn;
+      params.check_out = filters.checkOut;
+    }
+
+    if (filters?.guests) {
+      params.guests = filters.guests;
+    }
+
+    setLoading(true);
+
     api
-      .get("/listings")
+      .get("/listings", { params })
       .then((response) => {
         setProperties(response.data);
       })
@@ -20,7 +38,7 @@ function Home() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [filters]);
 
   return (
     <>
@@ -34,11 +52,15 @@ function Home() {
       </section>
 
       {/* Search Bar */}
-      <SearchBar />
+      <SearchBar onSearch={setFilters} />
 
       {/* Property Listings */}
       <section className="properties">
-        <h2>Featured Properties</h2>
+        <h2>
+          {filters?.location || filters?.checkIn
+            ? "Search Results"
+            : "Featured Properties"}
+        </h2>
 
         {loading ? (
           <p>Loading properties...</p>
@@ -52,7 +74,7 @@ function Home() {
             ))}
           </div>
         ) : (
-          <p>No properties available yet.</p>
+          <p>No properties match your search. Try adjusting your filters.</p>
         )}
       </section>
     </>

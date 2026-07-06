@@ -58,3 +58,50 @@
 .search-btn:hover{
     background:#e11d48;
 }
+
+.clear-btn{
+    background:transparent;
+    color:#555;
+    border:1px solid #ddd;
+    padding:18px 22px;
+    border-radius:50px;
+    cursor:pointer;
+    font-size:15px;
+    margin-left:10px;
+    transition:.3s;
+}
+
+.clear-btn:hover{
+    background:#f5f5f5;
+}
+
+.search-error{
+    text-align:center;
+    color:#c62828;
+    margin-top:12px;
+    font-size:14px;
+}
+
+@media (max-width:900px){
+
+    .search-box{
+        flex-wrap:wrap;
+        border-radius:24px;
+        gap:12px;
+    }
+
+    .divider{
+        display:none;
+    }
+
+    .search-item{
+        flex:1 1 45%;
+    }
+
+    .search-btn,
+    .clear-btn{
+        flex:1 1 100%;
+        margin-left:0;
+    }
+
+}

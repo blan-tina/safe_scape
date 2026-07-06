@@ -123,7 +123,7 @@ function PropertyDetails() {
       <img
         src={
           property.images && property.images.length > 0
-            ? property.images[0]
+            ? property.images[0].image_url
             : "https://placehold.co/900x500?text=No+Image"
         }
         alt={property.title}
@@ -159,12 +159,12 @@ function PropertyDetails() {
           <div className="amenities">
 
             {property.amenities &&
-              property.amenities.map((amenity, index) => (
+              property.amenities.map((amenity) => (
                 <div
                   className="amenity"
-                  key={index}
+                  key={amenity.id}
                 >
-                  ✔ {amenity}
+                  ✔ {amenity.name}
                 </div>
               ))}
 

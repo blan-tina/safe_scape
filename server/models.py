@@ -142,8 +142,14 @@ class Listing(db.Model):
             "available": self.available,
             "host": self.host.username,
             "host_id": self.host_id,
-            "images": [image.image_url for image in self.images],
-            "amenities": [amenity.name for amenity in self.amenities],
+            "images": [
+                {"id": image.id, "image_url": image.image_url}
+                for image in self.images
+            ],
+            "amenities": [
+                {"id": amenity.id, "name": amenity.name}
+                for amenity in self.amenities
+            ],
             "created_at": self.created_at.isoformat()
         }
 

@@ -1,1 +1,5 @@
 .env
+bnb.db
+venv/
+__pycache__/
+instance/

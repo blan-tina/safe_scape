@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 import "./Login.css";
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -18,7 +20,6 @@ function Register() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
@@ -32,7 +33,6 @@ function Register() {
     e.preventDefault();
 
     setError("");
-    setSuccess("");
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
@@ -47,7 +47,7 @@ function Register() {
     setLoading(true);
 
     try {
-      await api.post("/register", {
+      const response = await api.post("/register", {
         username: formData.username,
         email: formData.email,
         phone: formData.phone,
@@ -55,11 +55,13 @@ function Register() {
         role: formData.role,
       });
 
-      setSuccess("Account created successfully! Redirecting to login...");
+      const { access_token, user } = response.data;
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      login(user, access_token);
+
+      navigate(
+        user.role === "host" ? "/host-dashboard" : "/guest-dashboard"
+      );
     } catch (err) {
       setError(
         err.response?.data?.error || "Unable to create account."
@@ -81,15 +83,6 @@ function Register() {
         {error && (
           <div className="error-message">
             {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            className="error-message"
-            style={{ background: "#e8f5e9", color: "#2e7d32" }}
-          >
-            {success}
           </div>
         )}
 

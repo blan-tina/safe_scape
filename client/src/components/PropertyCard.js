@@ -15,6 +15,10 @@ function PropertyCard({ property }) {
           }
           alt={property.title}
           className="property-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://placehold.co/400x250?text=No+Image";
+          }}
         />
 
         <span className="verified">
@@ -33,7 +37,9 @@ function PropertyCard({ property }) {
           <h3>{property.title}</h3>
 
           <span className="rating">
-            ⭐ 4.7
+            {property.average_rating
+              ? `⭐ ${property.average_rating} (${property.review_count})`
+              : "New"}
           </span>
         </div>
 

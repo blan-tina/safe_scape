@@ -185,6 +185,136 @@
 }
 
 
+.property-rating-summary {
+    color: #444;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+
+.message-host-box,
+.review-form {
+    background: #f8f8f8;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.message-host-box h3 {
+    color: #2e7d32;
+    margin-bottom: 12px;
+}
+
+.message-host-box textarea,
+.review-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.message-host-box button,
+.review-form button {
+    margin-top: 12px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    background: #2e7d32;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.message-host-box button:hover,
+.review-form button:hover {
+    background: #1b5e20;
+}
+
+.view-conversation-link {
+    display: inline-block;
+    margin-top: 14px;
+    color: #2e7d32;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.view-conversation-link:hover {
+    text-decoration: underline;
+}
+
+.review-form label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.review-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    font-size: 15px;
+}
+
+.review-hint {
+    font-size: 13px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.form-error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.form-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.reviews-list {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.review-item {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 18px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-item p {
+    margin: 0 0 8px 0;
+}
+
+.review-date {
+    font-size: 12px;
+    color: #999;
+}
+
 
 @media (max-width: 1000px) {
 

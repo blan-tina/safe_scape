@@ -10,10 +10,13 @@ function HostDashboard() {
   const { user } = useAuth();
 
   const [listings, setListings] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     fetchListings();
+    fetchBookings();
   }, []);
 
   async function fetchListings() {
@@ -24,6 +27,30 @@ function HostDashboard() {
       console.log(error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchBookings() {
+    try {
+      const response = await api.get("/host-bookings");
+      setBookings(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function updateBookingStatus(bookingId, status) {
+    setUpdatingId(bookingId);
+
+    try {
+      await api.put(`/bookings/${bookingId}`, { status });
+      await fetchBookings();
+    } catch (error) {
+      alert(
+        error.response?.data?.error || "Unable to update booking."
+      );
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -153,6 +180,94 @@ function HostDashboard() {
                 </button>
 
               </div>
+
+            </div>
+
+          ))
+
+        )}
+
+      </div>
+
+      <h2>Bookings</h2>
+
+      <div className="host-bookings">
+
+        {bookings.length === 0 ? (
+
+          <p>No bookings yet for your properties.</p>
+
+        ) : (
+
+          bookings.map((booking) => (
+
+            <div
+              className="host-booking-card"
+              key={booking.id}
+            >
+
+              <div className="booking-info">
+
+                <h3>{booking.listing_title}</h3>
+
+                <p>Guest: {booking.guest_name}</p>
+
+                <p>
+                  {booking.check_in} → {booking.check_out}
+                  {" "}({booking.guests} guest{booking.guests > 1 ? "s" : ""})
+                </p>
+
+                <p>
+                  KSh {booking.total_price.toLocaleString()}
+                </p>
+
+                <span className={`status-badge status-${booking.status}`}>
+                  {booking.status}
+                </span>
+
+              </div>
+
+              {booking.status === "pending" && (
+                <div className="booking-actions">
+
+                  <button
+                    className="accept-btn"
+                    disabled={updatingId === booking.id}
+                    onClick={() =>
+                      updateBookingStatus(booking.id, "confirmed")
+                    }
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    className="reject-btn"
+                    disabled={updatingId === booking.id}
+                    onClick={() =>
+                      updateBookingStatus(booking.id, "cancelled")
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+              )}
+
+              {booking.status === "confirmed" && (
+                <div className="booking-actions">
+
+                  <button
+                    className="reject-btn"
+                    disabled={updatingId === booking.id}
+                    onClick={() =>
+                      updateBookingStatus(booking.id, "cancelled")
+                    }
+                  >
+                    Cancel Booking
+                  </button>
+
+                </div>
+              )}
 
             </div>
 

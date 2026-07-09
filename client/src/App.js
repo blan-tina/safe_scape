@@ -11,6 +11,7 @@ import PropertyDetails from "./pages/PropertyDetails";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AddProperty from "./pages/AddProperty";
 import EditProperty from "./pages/EditProperty";
+import Messages from "./pages/Messages";
 import "./App.css";
 
 function App() {
@@ -52,6 +53,22 @@ function App() {
           element={
             <ProtectedRoute role="host">
               <EditProperty />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages/:userId"
+          element={
+            <ProtectedRoute>
+              <Messages />
             </ProtectedRoute>
           }
         />

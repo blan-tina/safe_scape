@@ -29,6 +29,8 @@ CORS(
     },
     supports_credentials=True
 )
+
+
 # ==========================================================
 # HOME
 # ==========================================================
@@ -89,8 +91,23 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    access_token = create_access_token(
+        identity={
+            "id": user.id,
+            "role": user.role
+        }
+    )
+
     return jsonify({
-        "message": "Account created successfully."
+        "message": "Account created successfully.",
+        "access_token": access_token,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role
+        }
     }), 201
 
 # ==========================================================
@@ -285,6 +302,8 @@ def get_listing(id):
 
         "host": listing.host.username,
 
+        "host_id": listing.host_id,
+
         "images": [
             {"id": image.id, "image_url": image.image_url}
             for image in listing.images
@@ -295,11 +314,19 @@ def get_listing(id):
             for amenity in listing.amenities
         ],
 
+        "average_rating": round(
+            sum(r.rating for r in listing.reviews) / len(listing.reviews), 1
+        ) if listing.reviews else None,
+
+        "review_count": len(listing.reviews),
+
         "reviews": [
             {
+                "id": review.id,
                 "guest": review.guest.username,
                 "rating": review.rating,
-                "comment": review.comment
+                "comment": review.comment,
+                "created_at": review.created_at.isoformat()
             }
             for review in listing.reviews
         ]
@@ -777,7 +804,15 @@ def my_bookings():
 # ==========================================================
 
 @app.route("/bookings/guest/<int:guest_id>", methods=["GET"])
+@jwt_required()
 def guest_bookings(guest_id):
+
+    current_user = get_jwt_identity()
+
+    if current_user["id"] != guest_id:
+        return jsonify({
+            "error": "You can only view your own bookings."
+        }), 403
 
     bookings = Booking.query.filter_by(
         guest_id=guest_id
@@ -794,7 +829,15 @@ def guest_bookings(guest_id):
 # ==========================================================
 
 @app.route("/bookings/host/<int:host_id>", methods=["GET"])
+@jwt_required()
 def host_bookings(host_id):
+
+    current_user = get_jwt_identity()
+
+    if current_user["id"] != host_id:
+        return jsonify({
+            "error": "You can only view your own bookings."
+        }), 403
 
     bookings = Booking.query.join(Listing).filter(
         Listing.host_id == host_id
@@ -802,6 +845,36 @@ def host_bookings(host_id):
 
     return jsonify([
         booking.to_dict()
+        for booking in bookings
+    ])
+
+
+# ==========================================================
+# GET MY BOOKINGS (AS HOST) - for the host dashboard
+# ==========================================================
+
+@app.route("/host-bookings", methods=["GET"])
+@jwt_required()
+def my_host_bookings():
+
+    current_user = get_jwt_identity()
+
+    bookings = Booking.query.join(Listing).filter(
+        Listing.host_id == current_user["id"]
+    ).order_by(Booking.created_at.desc()).all()
+
+    return jsonify([
+        {
+            "id": booking.id,
+            "listing_id": booking.listing_id,
+            "listing_title": booking.listing.title,
+            "guest_name": booking.guest.username,
+            "check_in": booking.check_in.isoformat(),
+            "check_out": booking.check_out.isoformat(),
+            "guests": booking.guests,
+            "total_price": booking.total_price,
+            "status": booking.status,
+        }
         for booking in bookings
     ])
 
@@ -825,10 +898,16 @@ def update_booking(booking_id):
 
     data = request.get_json()
 
-    booking.status = data.get(
-        "status",
-        booking.status
-    )
+    new_status = data.get("status", booking.status)
+
+    allowed_statuses = ["pending", "confirmed", "cancelled"]
+
+    if new_status not in allowed_statuses:
+        return jsonify({
+            "error": f"status must be one of {allowed_statuses}."
+        }), 400
+
+    booking.status = new_status
 
     db.session.commit()
 
@@ -915,6 +994,29 @@ def create_review():
 
     current_user = get_jwt_identity()
 
+    # Only guests who have actually booked this property may review it.
+    has_booking = Booking.query.filter(
+        Booking.listing_id == data["listing_id"],
+        Booking.guest_id == current_user["id"],
+        Booking.status != "cancelled",
+    ).first()
+
+    if not has_booking:
+        return jsonify({
+            "error": "You can only review properties you have booked."
+        }), 403
+
+    # Prevent leaving more than one review per listing.
+    existing_review = Review.query.filter_by(
+        listing_id=data["listing_id"],
+        guest_id=current_user["id"],
+    ).first()
+
+    if existing_review:
+        return jsonify({
+            "error": "You have already reviewed this property."
+        }), 400
+
     review = Review(
         rating=data["rating"],
         comment=data.get("comment", ""),
@@ -992,7 +1094,15 @@ def send_message():
 # ==========================================================
 
 @app.route("/messages/<int:user1>/<int:user2>", methods=["GET"])
+@jwt_required()
 def conversation(user1, user2):
+
+    current_user = get_jwt_identity()
+
+    if current_user["id"] not in (user1, user2):
+        return jsonify({
+            "error": "You can only view your own conversations."
+        }), 403
 
     messages = Message.query.filter(
         ((Message.sender_id == user1) &
@@ -1009,6 +1119,39 @@ def conversation(user1, user2):
 
 
 # ==========================================================
+# INBOX - LIST ALL CONVERSATIONS FOR CURRENT USER
+# ==========================================================
+
+@app.route("/conversations", methods=["GET"])
+@jwt_required()
+def list_conversations():
+
+    current_user = get_jwt_identity()
+    my_id = current_user["id"]
+
+    messages = Message.query.filter(
+        (Message.sender_id == my_id) |
+        (Message.receiver_id == my_id)
+    ).order_by(Message.sent_at.desc()).all()
+
+    conversations = {}
+
+    for msg in messages:
+
+        other_user = msg.receiver if msg.sender_id == my_id else msg.sender
+
+        if other_user.id not in conversations:
+            conversations[other_user.id] = {
+                "user_id": other_user.id,
+                "username": other_user.username,
+                "last_message": msg.message,
+                "last_message_at": msg.sent_at.isoformat(),
+            }
+
+    return jsonify(list(conversations.values()))
+
+
+# ==========================================================
 # START APPLICATION
 # ==========================================================
 
@@ -1019,6 +1162,7 @@ if __name__ == "__main__":
 
     app.run(
         debug=True,
+        use_reloader=False,
         host="0.0.0.0",
         port=5000
     )

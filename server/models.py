@@ -127,6 +127,10 @@ class Listing(db.Model):
     )
 
     def to_dict(self):
+
+        ratings = [review.rating for review in self.reviews]
+        average_rating = round(sum(ratings) / len(ratings), 1) if ratings else None
+
         return {
             "id": self.id,
             "title": self.title,
@@ -150,6 +154,8 @@ class Listing(db.Model):
                 {"id": amenity.id, "name": amenity.name}
                 for amenity in self.amenities
             ],
+            "average_rating": average_rating,
+            "review_count": len(ratings),
             "created_at": self.created_at.isoformat()
         }
 

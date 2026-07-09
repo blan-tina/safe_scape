@@ -36,6 +36,10 @@ function Navbar() {
               Dashboard
             </Link>
 
+            <Link to="/messages">
+              Messages
+            </Link>
+
             <button
               className="logout-btn"
               onClick={handleLogout}
@@ -49,6 +53,10 @@ function Navbar() {
           <>
             <Link to="/host-dashboard">
               Dashboard
+            </Link>
+
+            <Link to="/messages">
+              Messages
             </Link>
 
             <button

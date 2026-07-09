@@ -204,14 +204,14 @@ with app.app_context():
     print("Adding images...")
 
     image_urls = {
-        listing1.id: "https://picsum.photos/seed/safescape-apartment/800/600",
-        listing2.id: "https://picsum.photos/seed/safescape-beachhouse/800/600",
-        listing3.id: "https://picsum.photos/seed/safescape-lakecottage/800/600",
-        listing4.id: "https://picsum.photos/seed/safescape-coastalvilla/800/600",
-        listing5.id: "https://picsum.photos/seed/safescape-mountaincabin/800/600",
-        listing6.id: "https://picsum.photos/seed/safescape-citystudio/800/600",
-        listing7.id: "https://picsum.photos/seed/safescape-safarilodge/800/600",
-        listing8.id: "https://picsum.photos/seed/safescape-lakebungalow/800/600",
+        listing1.id: "https://plus.unsplash.com/premium_photo-1675537843200-78c1a0ea1736?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVkcm9vbXxlbnwwfHwwfHx8MA%3D%3D",
+        listing2.id: "https://plus.unsplash.com/premium_photo-1676823553207-758c7a66e9bb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YmVkcm9vbXxlbnwwfHwwfHx8MA%3D%3D",
+        listing3.id: "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8YmVkcm9vbXxlbnwwfHwwfHx8MA%3D%3D",
+        listing4.id: "https://plus.unsplash.com/premium_photo-1683120852623-143817d6400b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8YmVkcm9vbXxlbnwwfHwwfHx8MA%3D%3D",
+        listing5.id: "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGJlZHJvb218ZW58MHx8MHx8fDA%3D",
+        listing6.id: "https://images.unsplash.com/photo-1531835551805-16d864c8d311?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJlZHJvb218ZW58MHx8MHx8fDA%3D",
+        listing7.id: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGJlZHJvb218ZW58MHx8MHx8fDA%3D",
+        listing8.id: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGJlZHJvb218ZW58MHx8MHx8fDA%3D",
     }
 
     images = [

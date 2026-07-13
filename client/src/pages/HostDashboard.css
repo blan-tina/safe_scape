@@ -263,7 +263,9 @@
     cursor: not-allowed;
 }
 
-
+/* ===========================
+   RESPONSIVE
+=========================== */
 
 @media (max-width: 900px) {
 

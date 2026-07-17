@@ -2,23 +2,25 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-
-from models import ( db,User, Listing, Booking, Review, Message, PropertyImage, Amenity )
+from flask_migrate import Migrate
+from models import db , User, Listing, Booking, Review, Message, PropertyImage, Amenity  
 from flask_jwt_extended import ( JWTManager, create_access_token, jwt_required, get_jwt_identity)
-from config import Config
-
+from dotenv import load_dotenv 
+import os 
+load_dotenv()
 app = Flask(__name__)
 
 # ==========================================================
 # CONFIGURATION
 # ==========================================================
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://user_bnb:123Host!@localhost/bnb_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = "dev_secret_key"
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 
 db.init_app(app)
+migrate=Migrate(app,db)
 
 CORS(
     app,

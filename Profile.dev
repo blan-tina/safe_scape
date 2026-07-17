@@ -1,2 +1,2 @@
-backend: gunicorn --chdir server app:app --port 5000
+backend: gunicorn --chdir server app:app 
 frontend: npm start --prefix client
